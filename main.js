@@ -1,56 +1,84 @@
+const DESPLAZAR = 10;
 let pantalla = document.body.getBoundingClientRect();
 let score = 0;
-
-document.addEventListener('keypress',(e)=>{
-    let personaje = document.getElementById('nave');
-    let boundsPersonaje = personaje.getBoundingClientRect();
-    let x = personaje.getBoundingClientRect().x;
-    let y = personaje.getBoundingClientRect().y;
-
-    const DESPLAZAR = 5;
-
-    if(e.code=='KeyA'){
-        x = x == 0 ? 0 : x - DESPLAZAR;
-    }
-    if(e.code=='KeyS'){
-        if((y + boundsPersonaje.height) >= pantalla.height){
-            y = pantalla.height - boundsPersonaje.height;
-        }else{
-            y = y + DESPLAZAR;
-        }
-    }
-    if(e.code=='KeyD'){
-        if((x + boundsPersonaje.width) >= pantalla.width){
-            x = pantalla.width - boundsPersonaje.width;
-        }else{
-            x = x + DESPLAZAR;
-        }
-    }
-    if(e.code=='KeyW'){
-        y = y == 0 ? 0 : y - DESPLAZAR;
-    }
-    if(e.code=='Space'){
-        comenzarJuego();
-    }
-    if(e.code=='Enter'){
-        finalizarJuego();
-    }
-    personaje.style.transform = `translate(${x}px,${y}px)`;
-});
-
-
+let nave = document.getElementById('nave');
 let comenzar = null;
 let eliminar = null;
-let game = null;
-function comenzarJuego() {
-    comenzar = setInterval(agregarVillano, 2000);
-    eliminar = setInterval(eliminarVillano, 500);
-    game = setInterval(vive, 100);
+let juego = null;
+let velocidad = null;
+let dificultad = 0;
+
+function play(){
+    initComponents();
 }
 
-function vive(){
+function initComponents(){
+    //Reniciar contadores
+    score = 0;
+    dificultad = 0;
+    //iniciar nave
+    nave.src = 'images/nave.png';
+    nave.style.transform = 'translate(0,0)';
+    //quitar presentacion, en caso que sea visible
+    let presentacion = document.getElementById('presentacion');
+    presentacion.style.display = 'none';
+    //quitar vista de perdida, en caso que sea visible
+    let perdiste = document.getElementById('perdiste');
+    perdiste.style.display = 'none';
+    //inicializar los metodos que se repiten            
+    comenzar = setInterval(agregarMeteoro, 2000);
+    eliminar = setInterval(quitarMeteoro, 500);
+    juego = setInterval(verificarEstadoJuego, 100);
+    velocidad = setInterval(aumentarVelocidad, 10000);
+}
+
+function finalizarJuego(){
+    clearInterval(velocidad);
+    clearInterval(comenzar);
+    clearInterval(eliminar);
+    clearInterval(juego);
+}
+
+function aumentarVelocidad() {
+    dificultad = dificultad + 1;
+    comenzar = setInterval(agregarMeteoro, 2000 - dificultad);
+}
+
+/**
+ * *este metodo funciona correctamente
+ */
+document.addEventListener('keypress',(e)=>{
+    let bounds = nave.getBoundingClientRect();
+    let x = bounds.x;
+    let y = bounds.y;
+    switch(e.code){
+        case 'KeyA': 
+            x = x == 0 ? 0 : x - DESPLAZAR;
+        break;
+        case 'KeyS':
+            if((y + bounds.height) >= pantalla.height){
+                y = pantalla.height - bounds.height;
+            }else{
+                y = y + DESPLAZAR;
+            }
+        break;
+        case 'KeyD':
+            if((x + bounds.width) >= pantalla.width){
+                x = pantalla.width - bounds.width;
+            }else{
+                x = x + DESPLAZAR;
+            }
+        break;
+        case 'KeyW':
+            y = y == 0 ? 0 : y - DESPLAZAR;
+        break;
+    }
+    nave.style.transform = `translate(${x}px,${y}px)`;
+});
+
+function verificarEstadoJuego(){
     score = score + 5;
-    let villanos = document.getElementsByClassName('villano');
+    let villanos = document.getElementsByClassName('meteoro');
     let personaje = document.getElementById('nave').getBoundingClientRect();
     let posicionX = personaje.x + personaje.width;
     let posicionInicialY = personaje.y;
@@ -81,31 +109,30 @@ function vive(){
             let record = document.getElementById('record');
             record.innerHTML = score;
             finalizarJuego();
-            
         }
     }
 }
 
-function finalizarJuego(){
-    clearInterval(comenzar);
-    clearInterval(eliminar);
-    clearInterval(game);
-}
-
-function agregarVillano() {
-    let y = Math.floor(Math.random() * 617);
+/**
+ * este metodo agrega un nuevo meteoro a la pantalla
+ */
+function agregarMeteoro() {
+    let y = Math.floor(Math.random() * pantalla.height);
     const villano = document.createElement("div");
-    villano.classList.add("villano");
-    villano.style.transform = `translateY(${y}px)`;
+    villano.classList.add("meteoro");
+    villano.style.transform = `translateY(${y-50}px)`;
     villano.style.animation = 'mover 5.5s linear';
     villano.id = `VLL${Math.floor(Math.random() * 100)}`;
     document.body.appendChild(villano);
 }
 
-function eliminarVillano(){
-    let villanos = document.getElementsByClassName('villano');
-    for (let i = 0; i < villanos.length; i++) {
-        let id = villanos[i].getAttribute('id');
+/**
+ * este metodo se encarga de eliminar los meteoros que salen de la pantalla
+ */
+function quitarMeteoro(){
+    let meteoros = document.getElementsByClassName('meteoro');
+    for (let i = 0; i < meteoros.length; i++) {
+        let id = meteoros[i].getAttribute('id');
         if(document.getElementById(id).getBoundingClientRect().x < 0){
             document.getElementById(id).remove();
         }
