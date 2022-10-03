@@ -1,3 +1,8 @@
 .firebase/
 firebase.json
+<<<<<<< HEAD
 .firebaseerc
+=======
+.firebaserc
+.gitignore
+>>>>>>> temp-branch
