@@ -12,6 +12,13 @@ const explosion = new Audio('media/explosion.mp3');
 
 let musica = true;
 
+document.addEventListener('mousemove',(e)=>{
+    const x = e.clientX;
+    const y = e.clientY;
+    nave.style.cursor = 'none';
+    nave.style.transform = `translate(${x-25}px,${y-25}px)`;
+});
+
 function play(){
     initComponents();
     iniciar();
@@ -120,9 +127,6 @@ function verificarEstadoJuego(){
     let posicionX = personaje.x + personaje.width;
     let posicionInicialY = personaje.y;
     let posicionFinalY = personaje.y + personaje.height;
-    
-    // return;
-    
     
     for (let i = 0; i < villanos.length; i++) {
         let villano = villanos[i].getBoundingClientRect();
